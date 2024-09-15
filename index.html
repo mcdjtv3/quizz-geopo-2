@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz : La Conflictualité au XXIème Siècle</title>
+    <style>
+        body {
+            font-family: 'Mayan', sans-serif;
+            margin: 0;
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #333;
+            text-align: center;
+        }
+        .quiz-container, .summary {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            background-image: url('images/back.jpg.webp');
+            background-size: cover;
+            background-position: center;
+        }
+        .question {
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #000;
+        }
+        .choices {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            margin-left: 20%;
+        }
+        .choices li {
+            margin: 8px 0;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #FF0000;
+            color: white;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #CC0000;
+        }
+        .summary {
+            display: none;
+        }
+        .summary ul {
+            list-style: none;
+            padding: 0;
+        }
+        .summary li {
+            text-align: left;
+            margin-left: 20%;
+            margin-bottom: 10px;
+        }
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+        .incorrect {
+            color: red;
+            font-weight: bold;
+        }
+        .score {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .quiz-container, .summary {
+                max-width: 90%;
+                margin: 20px auto;
+                padding: 15px;
+                border-radius: 10px;
+            }
+            button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+        }
+        @media (max-width: 480px) {
+            .quiz-container, .summary {
+                padding: 10px;
+                margin: 10px;
+                border-radius: 10px;
+            }
+            .question {
+                font-size: 16px;
+            }
+            button {
+                font-size: 12px;
+                padding: 6px 12px;
+                border-radius: 10px;
+            }
+        }
+        @media (min-width: 1024px) {
+            .quiz-container, .summary {
+                max-width: 800px;
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container" id="quiz-container">
+    <h2>QCM ENTRAINEMENT - La Conflictualité au XXIème Siècle</h2>
+    <div id="question-container">
+        <!-- Les questions seront affichées ici dynamiquement -->
+    </div>
+    <button id="next-button" onclick="nextQuestion()">Suivant</button>
+</div>
+
+<div class="summary" id="summary">
+    <h3>Récapitulatif</h3>
+    <ul id="summary-list">
+        <!-- Le récapitulatif des réponses sera affiché ici -->
+    </ul>
+    <div class="score" id="score"></div>
+    <button onclick="restartQuiz()">Recommencer</button>
+</div>
+
+<script>
+    const quizData = [
+        { question: "Quel est le principal objectif des cyberguerres ?", choices: ["Détruire des installations", "Neutraliser les systèmes d’information et manipuler l'information", "Provoquer des guerres civiles", "Créer des nouvelles armées"], correct: 1 },
+        { question: "Le virus Stuxnet a été développé par:", choices: ["La Russie et l’Iran", "La France et le Royaume-Uni", "Les Etats-Unis et Israël", "La Chine et la Corée du Nord"], correct: 2 },
+        { question: "Quel est un exemple de conflit séparatiste contemporain ?", choices: ["Le conflit syrien", "Le conflit au Mozambique", "La région du Donbass en Ukraine", "Le conflit au Nicaragua"], correct: 2 },
+        { question: "Le génocide au Rwanda a causé environ:", choices: ["800 000 morts", "4 millions de morts", "100 000 morts", "1,5 millions de morts"], correct: 0 },
+        { question: "Quel est un exemple de conflit insurrectionnel ?", choices: ["La guerre du Soudan", "Le conflit en Syrie", "La guerre froide", "La guerre au Pérou"], correct: 1 },
+        { question: "Selon S. Huntington, quel est le principal foyer de tensions après la Guerre froide ?", choices: ["La confrontation entre capitalisme et communisme", "La lutte pour le contrôle des ressources naturelles", "La confrontation entre différentes civilisations", "La rivalité entre grandes puissances économiques"], correct: 2 },
+        { question: "Parmi les civilisations identifiées par Huntington, laquelle est incorrectement listée ?", choices: ["La civilisation islamique", "La civilisation confucéenne", "La civilisation européenne", "La civilisation latino-américaine"], correct: 2 },
+        { question: "Quel pays est l’un des principaux pays d’accueil des réfugiés syriens ?", choices: ["La Grèce", "La Turquie", "L’Italie", "L’Allemagne"], correct: 1 },
+        { question: "La guerre en République démocratique du Congo (1996-2004) a causé:", choices: ["1 million de morts", "2 millions de morts", "4 millions de morts", "5 millions de morts"], correct: 2 },
+        { question: "Quel élément rend difficile la paix en Syrie ?", choices: ["La présence d’armées étrangères", "L’opposition chiites/sunnites", "Le manque de ressources naturelles", "La désorganisation des institutions internationales"], correct: 1 }
+    ];
+
+    let currentQuestionIndex = 0;
+    let selectedAnswers = [];
+
+    function loadQuestion() {
+        const container = document.getElementById('question-container');
+        container.innerHTML = '';
+
+        const questionData = quizData[currentQuestionIndex];
+        const questionElem = document.createElement('div');
+        questionElem.className = 'question';
+        questionElem.textContent = questionData.question;
+
+        const choicesElem = document.createElement('ul');
+        choicesElem.className = 'choices';
+
+        questionData.choices.forEach((choice, index) => {
+            const choiceElem = document.createElement('li');
+            const choiceInput = document.createElement('input');
+            choiceInput.type = 'radio';
+            choiceInput.name = 'choice';
+            choiceInput.value = index;
+            choiceInput.id = `choice${index}`;
+            
+            const choiceLabel = document.createElement('label');
+            choiceLabel.htmlFor = `choice${index}`;
+            choiceLabel.textContent = choice;
+
+            choiceElem.appendChild(choiceInput);
+            choiceElem.appendChild(choiceLabel);
+            choicesElem.appendChild(choiceElem);
+        });
+
+        container.appendChild(questionElem);
+        container.appendChild(choicesElem);
+    }
+
+    function nextQuestion() {
+        const selectedChoice = document.querySelector('input[name="choice"]:checked');
+        if (!selectedChoice) {
+            alert("Veuillez sélectionner une réponse !");
+            return;
+        }
+
+        selectedAnswers.push(parseInt(selectedChoice.value));
+        currentQuestionIndex++;
+
+        if (currentQuestionIndex < quizData.length) {
+            loadQuestion();
+        } else {
+            showSummary();
+        }
+    }
+
+    function showSummary() {
+        document.getElementById('quiz-container').style.display = 'none';
+        const summary = document.getElementById('summary');
+        summary.style.display = 'block';
+
+        const summaryList = document.getElementById('summary-list');
+        summaryList.innerHTML = '';
+
+        let correctAnswers = 0;
+
+        quizData.forEach((q, index) => {
+            const summaryItem = document.createElement('li');
+            summaryItem.innerHTML = `
+                <strong>${q.question}</strong><br>
+                <div style="text-align: left; margin-left: 20%;">
+                    Votre réponse: ${q.choices[selectedAnswers[index]]} - 
+                    ${selectedAnswers[index] === q.correct ? '<span class="correct">Correct</span>' : '<span class="incorrect">Incorrect</span>'}<br>
+                    Bonne réponse: ${q.choices[q.correct]}
+                </div>
+            `;
+            summaryList.appendChild(summaryItem);
+            if (selectedAnswers[index] === q.correct) {
+                correctAnswers++;
+            }
+        });
+
+        document.getElementById('score').textContent = `Score: ${correctAnswers} / ${quizData.length}`;
+    }
+
+    function restartQuiz() {
+        currentQuestionIndex = 0;
+        selectedAnswers = [];
+        document.getElementById('summary').style.display = 'none';
+        document.getElementById('quiz-container').style.display = 'block';
+        loadQuestion();
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
